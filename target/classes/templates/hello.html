@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="zh-CN" xmlns:th="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8"/>
+    <title>欢迎页面</title>
+
+    <script src="/js/jquery.js"></script>
+
+    <style>
+        .menu {
+            width: 350px;
+            height: 500px;
+            background: red;
+            position: relative;
+            /*float: left;*/
+        }
+
+
+        .menu2 {
+            width: 500px;
+            height: 500px;
+            background: red;
+            position:absolute;
+            left: 500px;
+            top: 35px;
+        }
+        .submeun {
+            bottom: 0px;
+            float: left;
+            margin: 5px;
+            width: 100px;
+            height: 250px;
+            background: aqua
+        }
+
+        .edit {
+            position: absolute;
+            bottom: 0px;
+        }
+    </style>
+
+
+</head>
+
+
+<body>
+
+<select id="areaSelect" style="margin-bottom: 10px;width: 100px">
+    <option value="">选择area</option>
+    <!--<option value="test">test</option>-->
+    <option value="test1">test1</option>
+    <option value="xykwx">xykwx</option>
+    <option value="pipi">pipi</option>
+</select>
+<div class="menu">
+    <div class="edit">
+        <form id="addMenuForm">
+            <input name="order" id="order" type="text" hidden/>
+            <select style="text-align: center" id="type" name="type">
+                <option value="view">链接</option>
+                <option value="media_id">素材</option>
+            </select>
+            <p>名称: <input id="name" name="name" type="text"/></p>
+            <p>URL: <input id="url" name="url" type="text"/></p>
+            <button type="button" id="addMenu">确定</button>
+        </form>
+    </div>
+</div>
+
+<!--<hr>-->
+<!--<hr>-->
+
+
+<div class="menu2">
+    <select id="material" style="margin-bottom: 10px;width: 150px;height: 30px">
+        <option value="">选择素材类型</option>
+        <option value="image">图片</option>
+        <option value="news">图文</option>
+    </select>
+    <div class="menu3"></div>
+</div>
+</body>
+<script type="text/javascript">
+
+    $("#material").change(function () {
+        $(".menu2 input").remove()
+        $(".menu2 span").remove()
+        $(".menu2 p").remove()
+
+        $.get("/listMeterial?area=" + $("#areaSelect").val()+"&type="+$("#material").val(), function (data) {
+
+            $.each(data,function () {
+                var inpu='<p style="height: 1px"><input value="'+$(this)[0].mediaId+'"><span>'+$(this)[0].name+'</span></input></p>'
+
+                $(".menu3").append(inpu)
+            })
+
+        })
+
+
+    })
+
+
+    $("#areaSelect").change(function () {
+        getMenu()
+        $(".submeun").remove()
+        $("#syncWehat").remove()
+    })
+
+    function getMenu() {
+        $.get("/getMenu?area=" + $("#areaSelect").val(), function (data) {
+            var buttons = data.menu.button;
+            // var buttons = data.button;
+            // console.log(buttons[0])
+
+            for (i in buttons) {
+                var button = buttons[i];
+                var but = '<div class="submeun" name="' + i + '">'
+                but += '<input name="' + i + '" style="margin: 0px;margin-bottom: 2px; text-align: center" size="9" value="' + button.name + '"></input>'
+                var subButtons = button.sub_button
+                for (j in subButtons) {
+                    var subBut
+                    if (subButtons[j].type == 'view') {
+                        subBut = '<button name="view" id="' + i + "_" + j + '" style="width: 100%;height: 30px" type="button" value="' + subButtons[j].url + '">' + subButtons[j].name + '</button>'
+                    } else {
+                        subBut = '<button name="' + subButtons[j].type + '" id="' + i + "_" + j + '" style="width: 100%;height: 30px" type="button" value="' + subButtons[j].media_id + '">' + subButtons[j].name + '</button>'
+                    }
+                    but += subBut
+                }
+                if (subButtons.length < 5) {
+                    but += '<button id="' + i + "_+" + '" style="width: 100%;height: 30px" type="button" >' + "+" + '</button>'
+                }
+
+                but += '</div>';
+                $(".menu").append(but)
+            }
+            if (buttons.length == undefined || buttons.length < 3) {
+                if (buttons.length == undefined) {
+                    buttons.length = 0
+                }
+                for (var i = 0; i < 3 - buttons.length; i++) {
+                    var but = '<div class="submeun" name="' + (i + buttons.length) + '">'
+                    but += '<input name="' + (i + buttons.length) + '" style="margin: 0px;margin-bottom: 2px; text-align: center" size="9" value=""/>'
+                    but += '<button id="' + (i + buttons.length) + "_+" + '" style="width: 100%;height: 30px" type="button" >' + "+" + '</button>'
+                    but += '</div>';
+                    $(".menu").append(but)
+
+                }
+            }
+            $(".menu").append('<button id="syncWehat" style="width: 100%;height: 30px" type="button" >' + "同步至微信" + '</button>')
+        })
+    }
+
+
+    $(function () {
+
+        $(".menu").on("click", ".submeun button", function () {
+            var text = $(this).text();
+            if (text != '+') {
+                $("#url").val($(this).val());
+                $("#name").val(text)
+                $("#type").val($(this).attr("name"))
+
+            } else {
+                $("#url").val("");
+                $("#name").val("")
+            }
+            console.log($(this).attr("id"))
+            $("#order").val($(this).attr("id"))
+
+        });
+
+
+        $("#addMenu").click(function () {
+            var formData = $(this).parent().serializeArray();
+            var newbutton = {};
+
+            $.each(formData, function () {
+                newbutton[this.name] = this.value;
+            });
+            if (newbutton.order.indexOf("+") > 0) {
+                var index = newbutton.order.split("_")[0];
+                var add = $(".menu").children().eq(parseInt(index) + 1).children().eq(-1)
+                add.attr("name", newbutton.type)
+                var butLenth = parseInt($(".menu").children().eq(parseInt(index) + 1).children("button").length);
+                add.attr("id", index + "_" + (butLenth - 1))
+                add.attr("value", newbutton.url)
+                add.text(newbutton.name);
+                if (butLenth < 5) {
+                    $(".menu").children().eq(parseInt(index) + 1).append('<button id="' + index + "_+" + '" style="width: 100%;height: 30px" type="button" >' + "+" + '</button>')
+                }
+
+            } else {
+                var indexs = newbutton.order.split("_");
+                var edit = $(".menu").children().eq(parseInt(indexs[0]) + 1).children("button").eq(indexs[1])
+                edit.text(newbutton.name);
+                edit.attr("value", newbutton.url)
+                edit.attr("name", newbutton.type)
+            }
+        })
+
+
+        $(".menu").on("click", "#syncWehat", function () {
+            var result = {};
+            result.button = []
+            $('.submeun input').each(function (index, e) {
+                var attr = $(this).attr('name');
+                var val = $(this).val();
+                if (val) {
+                    // console.log(val)
+                    // console.log($(this).nextAll("button"))
+                    var subMenu = {}
+                    subMenu.name = $(this).val()
+                    subMenu.sub_button = []
+                    $(this).nextAll().each(function () {
+                        // console.log( $(this).attr("name"))
+                        var type = $(this).attr("name")
+                        // subMenu.name=$(this).val()
+                        var subBut = {}
+                        if (type) {
+                            subBut.type = type
+                            subBut.name = $(this).text();
+                            if (type == 'view') {
+                                subBut.url = $(this).attr("value")
+                            } else if (type == 'media_id') {
+                                subBut.media_id = $(this).attr("value")
+                            }
+                        }
+                        if (subBut.type) {
+
+                            subMenu.sub_button.push(subBut);
+                        }
+                    })
+                    result.button.push(subMenu)
+                }
+
+            })
+
+            var data = {};
+            data.area = $("#areaSelect").val()
+            data.menu = JSON.stringify(result)
+            $.ajax({
+                type: "POST",
+                url: "/syncMenu",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (data) {
+                    if (data.errcode == 0) {
+                        alert("成功")
+                    }
+
+                }
+            });
+
+
+        })
+
+
+    })
+
+
+</script>
+
+</html>

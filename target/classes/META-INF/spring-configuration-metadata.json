@@ -1,0 +1,46 @@
+{
+  "groups": [
+    {
+      "name": "wechat",
+      "type": "com.feiyu.domain.Wechat",
+      "sourceType": "com.feiyu.domain.Wechat"
+    }
+  ],
+  "properties": [
+    {
+      "name": "wechat.appid",
+      "type": "java.lang.String",
+      "sourceType": "com.feiyu.domain.Wechat"
+    },
+    {
+      "name": "wechat.audited-template-id",
+      "type": "java.lang.String",
+      "description": "审批通过模板ID",
+      "sourceType": "com.feiyu.domain.Wechat"
+    },
+    {
+      "name": "wechat.login-u-r-l",
+      "type": "java.lang.String",
+      "description": "微信授权url",
+      "sourceType": "com.feiyu.domain.Wechat"
+    },
+    {
+      "name": "wechat.redirect-u-r-l",
+      "type": "java.lang.String",
+      "description": "微信授权成功后 跳转的页面url",
+      "sourceType": "com.feiyu.domain.Wechat"
+    },
+    {
+      "name": "wechat.secret",
+      "type": "java.lang.String",
+      "sourceType": "com.feiyu.domain.Wechat"
+    },
+    {
+      "name": "wechat.vistor-template-id",
+      "type": "java.lang.String",
+      "description": "有人访问 模板ID",
+      "sourceType": "com.feiyu.domain.Wechat"
+    }
+  ],
+  "hints": []
+}
