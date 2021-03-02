@@ -4,40 +4,9 @@
     <meta charset="UTF-8"/>
     <title>欢迎页面</title>
 
-    <script src="/js/jquery.js"></script>
-
-    <style>
-        .menu {
-            width: 350px;
-            height: 500px;
-            background: red;
-            position: relative;
-            /*float: left;*/
-        }
+    <script src="/jquery.js"></script>
 
 
-        .menu2 {
-            width: 500px;
-            height: 500px;
-            background: red;
-            position:absolute;
-            left: 500px;
-            top: 35px;
-        }
-        .submeun {
-            bottom: 0px;
-            float: left;
-            margin: 5px;
-            width: 100px;
-            height: 250px;
-            background: aqua
-        }
-
-        .edit {
-            position: absolute;
-            bottom: 0px;
-        }
-    </style>
 
 
 </head>
@@ -45,15 +14,23 @@
 
 <body>
 
-<select id="areaSelect" style="margin-bottom: 10px;width: 100px">
-    <option value="">选择area</option>
-    <!--<option value="test">test</option>-->
-    <option value="test1">test1</option>
-</select>
+<!--<select id="areaSelect" style="margin-bottom: 10px;width: 100px">-->
+<!--    <option value="">选择area</option>-->
+<!--    &lt;!&ndash;<option value="test">test</option>&ndash;&gt;-->
+<!--    <option value="test1">test1</option>-->
+<!--</select>-->
+<div style="margin-bottom: 10px;width: 100%">
+    appid:<input id="appid" placeholder="请输入appid" value="wxb1d091b5b3a94c6e"/>
+    secret:<input id="secret" placeholder="请输入secret" value="c1dbc7fbfce3dfe96476ec24b099d91b"/>
+    <button id="areaSelect" type="button">查询</button>
+</div>
+
+
 <div class="menu">
     <div class="edit">
         <form id="addMenuForm">
             <input name="order" id="order" type="text" hidden/>
+<!--            <div id="addMenuDiv" style="visibility:hidden">-->
             <select style="text-align: center" id="type" name="type">
                 <option value="view">链接</option>
                 <option value="media_id">素材</option>
@@ -61,6 +38,7 @@
             <p>名称: <input id="name" name="name" type="text"/></p>
             <p>URL: <input id="url" name="url" type="text"/></p>
             <button type="button" id="addMenu">确定</button>
+<!--            </div>-->
         </form>
     </div>
 </div>
@@ -77,15 +55,31 @@
     </select>
     <div class="menu3"></div>
 </div>
+
+<div style="position: absolute;
+    left: 1029px;
+    top: 35px;">
+    <img src="/qrcode.png">
+</div>
+
+
 </body>
 <script type="text/javascript">
 
     $("#material").change(function () {
+
+        var appid = $("#appid").val();
+        var secret = $("#secret").val();
+        if (!appid || !secret) {
+            alert("appid或secret不能为空")
+            return false;
+        }
+
         $(".menu2 input").remove()
         $(".menu2 span").remove()
         $(".menu2 p").remove()
 
-        $.get("/listMeterial?area=" + $("#areaSelect").val()+"&type="+$("#material").val(), function (data) {
+        $.get("/wechat_menu/listMeterial?appid=" + appid+"&secret="+secret+"&type="+$("#material").val(), function (data) {
 
             $.each(data,function () {
                 var inpu='<p style="height: 1px"><input value="'+$(this)[0].mediaId+'"><span>'+$(this)[0].name+'</span></input></p>'
@@ -99,14 +93,21 @@
     })
 
 
-    $("#areaSelect").change(function () {
+    $("#areaSelect").click(function () {
         getMenu()
         $(".submeun").remove()
         $("#syncWehat").remove()
     })
 
     function getMenu() {
-        $.get("/getMenu?area=" + $("#areaSelect").val(), function (data) {
+        var appid = $("#appid").val();
+        var secret = $("#secret").val();
+        if (!appid || !secret) {
+            alert("appid或secret不能为空")
+            return false;
+        }
+
+        $.get("/wechat_menu/getMenu?appid=" + appid+"&secret="+secret, function (data) {
             var buttons = data.menu.button;
             // var buttons = data.button;
             // console.log(buttons[0])
@@ -114,7 +115,7 @@
             for (i in buttons) {
                 var button = buttons[i];
                 var but = '<div class="submeun" name="' + i + '">'
-                but += '<input name="' + i + '" style="margin: 0px;margin-bottom: 2px; text-align: center" size="9" value="' + button.name + '"></input>'
+                but += '<input name="' + i + '" style="margin: 0px;margin-bottom: 2px; text-align: center" size="9" value="' + button.name + '" placeholder="菜单名称不能空"></input>'
                 var subButtons = button.sub_button
                 for (j in subButtons) {
                     var subBut
@@ -138,7 +139,7 @@
                 }
                 for (var i = 0; i < 3 - buttons.length; i++) {
                     var but = '<div class="submeun" name="' + (i + buttons.length) + '">'
-                    but += '<input name="' + (i + buttons.length) + '" style="margin: 0px;margin-bottom: 2px; text-align: center" size="9" value=""/>'
+                    but += '<input name="' + (i + buttons.length) + '" style="margin: 0px;margin-bottom: 2px; text-align: center" size="9" value="" placeholder="菜单名称不能空"/>'
                     but += '<button id="' + (i + buttons.length) + "_+" + '" style="width: 100%;height: 30px" type="button" >' + "+" + '</button>'
                     but += '</div>';
                     $(".menu").append(but)
@@ -146,7 +147,7 @@
                 }
             }
             $(".menu").append('<button id="syncWehat" style="width: 100%;height: 30px" type="button" >' + "同步至微信" + '</button>')
-        })
+        });
     }
 
 
@@ -199,17 +200,25 @@
 
 
         $(".menu").on("click", "#syncWehat", function () {
+            var appid = $("#appid").val();
+            var secret = $("#secret").val();
+            if (!appid || !secret) {
+                alert("appid或secret不能为空")
+                return false;
+            }
             var result = {};
             result.button = []
             $('.submeun input').each(function (index, e) {
                 var attr = $(this).attr('name');
                 var val = $(this).val();
+
                 if (val) {
                     // console.log(val)
                     // console.log($(this).nextAll("button"))
-                    var subMenu = {}
-                    subMenu.name = $(this).val()
-                    subMenu.sub_button = []
+                    var subMenu = {};
+                    subMenu.name = $(this).val();
+
+                    subMenu.sub_button = [];
                     $(this).nextAll().each(function () {
                         // console.log( $(this).attr("name"))
                         var type = $(this).attr("name")
@@ -228,18 +237,19 @@
 
                             subMenu.sub_button.push(subBut);
                         }
-                    })
-                    result.button.push(subMenu)
+                    });
+                    result.button.push(subMenu);
                 }
 
             })
 
             var data = {};
-            data.area = $("#areaSelect").val()
+            data.appid = appid
+            data.secret=secret
             data.menu = JSON.stringify(result)
             $.ajax({
                 type: "POST",
-                url: "/syncMenu",
+                url: "/wechat_menu/syncMenu",
                 data: JSON.stringify(data),
                 contentType: "application/json",
                 dataType: "json",
@@ -259,5 +269,36 @@
 
 
 </script>
+<style>
+    .menu {
+        width: 350px;
+        height: 500px;
+        background: #F5F5F5;
+        position: relative;
+        /*float: left;*/
+    }
 
+
+    .menu2 {
+        width: 500px;
+        height: 500px;
+        background: #F5F5F5;
+        position:absolute;
+        left: 500px;
+        top: 35px;
+    }
+    .submeun {
+        bottom: 0px;
+        float: left;
+        margin: 5px;
+        width: 100px;
+        height: 250px;
+        background: aqua
+    }
+
+    .edit {
+        position: absolute;
+        bottom: 0px;
+    }
+</style>
 </html>

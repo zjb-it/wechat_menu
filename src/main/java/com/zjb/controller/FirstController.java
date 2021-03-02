@@ -39,9 +39,9 @@ public class FirstController extends BaseController{
 
     @GetMapping("/getMenu")
     @ResponseBody
-    public Mono<JSONObject> getMenu(String area) {
+    public Mono<JSONObject> getMenu(String appid,String secret) {
 
-        return wechatService.getMenu(area);
+        return wechatService.getMenu(appid,secret);
     }
 
     @PostMapping("/syncMenu")
@@ -53,9 +53,9 @@ public class FirstController extends BaseController{
 
     @GetMapping("/listMeterial")
     @ResponseBody
-    public Flux<JSONObject> listMeterial(String area,String type) {
+    public Flux<JSONObject> listMeterial(String appid,String secret,String type) {
 
-        return wechatService.getMaterial(area, type);
+        return wechatService.getMaterial(appid,secret, type);
     }
 
 

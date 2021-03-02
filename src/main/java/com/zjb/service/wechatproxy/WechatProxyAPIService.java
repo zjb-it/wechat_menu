@@ -11,18 +11,18 @@ import reactor.core.publisher.Mono;
 public interface WechatProxyAPIService {
 
 
-    /**
-     * 获取公众号token
-     * @return
-     */
-    String getWechatToken();
+    ///**
+    // * 获取公众号token
+    // * @return
+    // */
+    //String getWechatToken();
 
 
     /**
      * 获取公众号token
      * @return
      */
-    Mono<JSONObject> getMenu(String area);
+    Mono<JSONObject> getMenu(String appid, String secret);
 
 
     /**
@@ -36,6 +36,6 @@ public interface WechatProxyAPIService {
      * 获取公众号token
      * @return
      */
-    Flux<JSONObject> getMaterial(String area, String type);
+    Flux<JSONObject> getMaterial(String appid,String secret, String type);
 
 }

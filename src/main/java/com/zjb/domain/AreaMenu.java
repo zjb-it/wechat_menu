@@ -4,6 +4,7 @@ import lombok.Data;
 
 @Data
 public class AreaMenu {
-    private String area;
+    private String appid;
+    private String secret;
     private String menu;
 }
